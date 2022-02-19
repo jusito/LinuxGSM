@@ -359,7 +359,7 @@ fn_fetch_file(){
 			fi
 			# Trap will remove part downloaded files if canceled.
 			trap fn_fetch_trap INT
-			curlcmd=(curl --connect-timeout 10 --fail -L -o "${local_filedir}/${local_filename}")
+			curlcmd=(curl --connect-timeout 10 --fail -L -o "${local_filedir}/${local_filename}" --retry 2)
 			# progress for large files
 			large_files=("bz2" "gz" "zip" "jar" "xz")
 			local exitcode=""
@@ -371,7 +371,7 @@ fn_fetch_file(){
 				exitcode="$?"
 			else
 				echo -en "fetching ${fileurl_name} ${local_filename}...\c"
-				"${curlcmd[@]}" -s "${fileurl}" 2>&1
+				"${curlcmd[@]}" -s -S "${fileurl}" 2>&1
 				exitcode="$?"
 			fi
 
