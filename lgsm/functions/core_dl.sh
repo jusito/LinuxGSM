@@ -360,19 +360,20 @@ fn_fetch_file(){
 			# Trap will remove part downloaded files if canceled.
 			trap fn_fetch_trap INT
 			curlcmd=(curl --connect-timeout 10 --fail -L -o "${local_filedir}/${local_filename}")
+			# progress for large files
 			large_files=("bz2" "gz" "zip" "jar" "xz")
+			local exitcode=""
 			if grep -qE "(^|\s)${local_filename##*.}(\s|$)" <<< "${large_files[@]}"; then
 				echo -en "downloading ${local_filename}..."
 				fn_sleep_time
 				echo -en "\033[1K"
-				curlcmd+=(--progress-bar)
+				"${curlcmd[@]}" --progress-bar "${fileurl}" 2>&1
+				exitcode="$?"
 			else
 				echo -en "fetching ${fileurl_name} ${local_filename}...\c"
-				curlcmd+=(-s)
+				"${curlcmd[@]}" -s "${fileurl}" 2>&1
+				exitcode="$?"
 			fi
-			curlcmd+=("${fileurl}")
-			"${curlcmd[@]}" 2>&1
-			local exitcode="$?"
 
 			# Download will fail if downloads a html file.
 			if [ -f "${local_filedir}/${local_filename}" ]; then
