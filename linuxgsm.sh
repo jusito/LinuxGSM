@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # Project: Linux Game Server Managers - LinuxGSM
 # Author: Daniel Gibbs
 # License: MIT License, Copyright (c) 2020 Daniel Gibbs
@@ -20,7 +21,7 @@ if [ -f ".dev-debug" ]; then
 	set -x
 fi
 
-version="v21.5.1.0"
+version="v21.5.1"
 shortname="core"
 gameservername="core"
 commandname="CORE"
@@ -47,9 +48,9 @@ userinput2="${2}"
 ## GitHub Branch Select
 # Allows for the use of different function files
 # from a different repo and/or branch.
-[ -n "${LGSM_GITHUBUSER}" ] && githubuser="${LGSM_GITHUBUSER}" || githubuser="GameServerManagers"
-[ -n "${LGSM_GITHUBREPO}" ] && githubrepo="${LGSM_GITHUBREPO}" || githubrepo="LinuxGSM"
-[ -n "${LGSM_GITHUBBRANCH}" ] && githubbranch="${LGSM_GITHUBBRANCH}" || githubbranch="master"
+githubuser="${LGSM_GITHUBUSER:-"GameServerManagers"}"
+githubrepo="${LGSM_GITHUBREPO:-"LinuxGSM"}"
+githubbranch="${LGSM_GITHUBBRANCH:-"master"}"
 
 # Core function that is required first.
 core_functions.sh(){
