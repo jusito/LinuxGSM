@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+servercode="$1"
+
 (
     cd "$(dirname "$0")"
     rm -rf build || true
@@ -9,6 +11,6 @@ set -euo pipefail
     
     cp linuxgsm.sh build/
     cd build
-    ./linuxgsm.sh gmodserver
-    ./gmodserver auto-install
+    ./linuxgsm.sh "$servercode"
+    ./"$servercode" auto-install
 )

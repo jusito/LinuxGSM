@@ -359,18 +359,20 @@ fn_fetch_file(){
 			fi
 			# Trap will remove part downloaded files if canceled.
 			trap fn_fetch_trap INT
-			# Larger files show a progress bar.
-			if [ "${local_filename##*.}" == "bz2" ]||[ "${local_filename##*.}" == "gz" ]||[ "${local_filename##*.}" == "zip" ]||[ "${local_filename##*.}" == "jar" ]||[ "${local_filename##*.}" == "xz" ]; then
+			curlcmd=(curl --connect-timeout 10 --fail -L -o "${local_filedir}/${local_filename}")
+			large_files=("bz2" "gz" "zip" "jar" "xz")
+			if grep -qE "(^|\s)${local_filename##*.}(\s|$)" <<< "${large_files[@]}"; then
 				echo -en "downloading ${local_filename}..."
 				fn_sleep_time
 				echo -en "\033[1K"
-				curlcmd=$(curl --connect-timeout 10 --progress-bar --fail -L -o "${local_filedir}/${local_filename}" "${fileurl}")
-				echo -en "downloading ${local_filename}..."
+				curlcmd+=(--progress-bar)
 			else
 				echo -en "fetching ${fileurl_name} ${local_filename}...\c"
-				curlcmd=$(curl --connect-timeout 10 -s --fail -L -o "${local_filedir}/${local_filename}" "${fileurl}" 2>&1)
+				curlcmd+=(-s)
 			fi
-			local exitcode=$?
+			curlcmd+=("${fileurl}")
+			"${curlcmd[@]}" 2>&1
+			local exitcode="$?"
 
 			# Download will fail if downloads a html file.
 			if [ -f "${local_filedir}/${local_filename}" ]; then
