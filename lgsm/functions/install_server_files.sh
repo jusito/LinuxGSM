@@ -10,6 +10,8 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 fn_install_server_files(){
 	if [ "${shortname}" == "ahl" ]; then
 		remote_fileurl="http://linuxgsm.download/ActionHalfLife/action_halflife-1.0.tar.xz"; local_filedir="${tmpdir}"; local_filename="action_halflife-1.0.tar.xz"; chmodx="nochmodx" run="norun"; force="noforce"; md5="61d7b79fd714888b6d65944fdaafa94a"
+	elif [ "${shortname}" == "bd" ]; then
+		remote_fileurl="https://s3.amazonaws.com/linuxgsm/base_defense_1775.tar.gz"; local_filedir="${tmpdir}"; local_filename="base_defense_1775.tar.gz";  chmodx="nochmodx" run="norun"; force="noforce"; md5="a272b65ab014d9e9a103fad26ce11ea5"
 	elif [ "${shortname}" == "bf1942" ]; then
 		remote_fileurl="http://linuxgsm.download/BattleField1942/bf1942_lnxded-1.61-hacked-to-1.612.full.tar.xz"; local_filedir="${tmpdir}"; local_filename="bf1942_lnxded-1.61-hacked-to-1.612.full.tar.xz"; chmodx="nochmodx" run="norun"; force="noforce"; md5="4223bf4ed85f5162c24b2cba51249b9e"
 	elif [ "${shortname}" == "bfv" ];then
@@ -62,6 +64,10 @@ fn_install_server_files(){
 		remote_fileurl="https://files.sa-mp.com/samp037svr_R2-1.tar.gz"; local_filedir="${tmpdir}"; local_filename="samp037svr_R2-1.tar.gz"; chmodx="nochmodx" run="norun"; force="noforce"; md5="93705e165550c97484678236749198a4"
 	elif [ "${shortname}" == "zmr" ]; then
 		remote_fileurl="http://linuxgsm.download/ZombieMasterReborn/zombie_master_reborn_b5_2.tar.xz"; local_filedir="${tmpdir}"; local_filename="zombie_master_reborn_b5_2.tar.xz"; chmodx="nochmodx" run="norun"; force="noforce"; md5="4b9b9832e863d03981a40c26065792a6"
+	else
+		fn_print_error "Installing ${gamename} Server failed, missing default configuration"
+		echo -e ""
+		exit 10
 	fi
 	fn_fetch_file "${remote_fileurl}" "" "" "" "${local_filedir}" "${local_filename}" "${chmodx}" "${run}" "${forcedl}" "${md5}"
 	fn_dl_extract "${local_filedir}" "${local_filename}" "${serverfiles}"

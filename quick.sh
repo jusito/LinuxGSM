@@ -9,8 +9,9 @@ servercode="$1"
     rm -rf build || true
     mkdir build
     
-    cp linuxgsm.sh build/
+    cp -r linuxgsm.sh lgsm build/
     cd build
+    touch .dev-debug
     ./linuxgsm.sh "$servercode"
     ./"$servercode" auto-install
 )
