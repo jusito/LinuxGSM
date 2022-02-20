@@ -158,20 +158,6 @@ fn_monitor_query(){
 	local disable_gamedig_after_attempt="3"
 	echo "___1"
 
-	last_execution="$(head -n 1 "${lockdir}/${selfname}.lock")"
-	delay_seconds="$((querydelay * 60))"
-	next_allowed_execution="$((last_execution + delay_seconds))"
-	seconds_to_wait="$((next_allowed_execution - $(date '+%s')))"
-	
-	if [ "$seconds_to_wait" -gt "0" ]; then
-		fn_script_log_info "monitoring delayed for ${seconds_to_wait}s"
-		for i in $(seq 1 "$seconds_to_wait"); do
-			#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: ${cyan}WAIT${default} $seconds/$seconds_between_attempts"
-			sleep 1s
-		done
-	fi
-	echo "___2"
-
 # Will loop and query up to 5 times every 15 seconds.
 # Query will wait up to 60 seconds to confirm server is down as server can become non-responsive during map changes.
 start_time="$(date '+%s')"
@@ -280,6 +266,19 @@ echo "___47"
 
 fn_monitor_loop(){
 	echo "fn_monitor_loop ${querymode}"
+	last_execution="$(head -n 1 "${lockdir}/${selfname}.lock")"
+	delay_seconds="$((querydelay * 60))"
+	next_allowed_execution="$((last_execution + delay_seconds))"
+	seconds_to_wait="$((next_allowed_execution - $(date '+%s')))"
+	
+	if [ "$seconds_to_wait" -gt "0" ]; then
+		fn_script_log_info "monitoring delayed for ${seconds_to_wait}s"
+		for i in $(seq 1 "$seconds_to_wait"); do
+			#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: ${cyan}WAIT${default} $seconds/$seconds_between_attempts"
+			sleep 1s
+		done
+	fi
+	echo "+5"
 	# loop though query methods selected by querymode.
 	totalseconds=0
 	if [ "${querymode}" == "2" ]; then
