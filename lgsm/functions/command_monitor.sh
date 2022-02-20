@@ -128,11 +128,10 @@ fn_monitor_check_queryport(){
 			#echo "...7"
 			fn_script_log_error "Checking port: Unable to query, queryport is not set"
 		fi
-		echo "...8"
-		core_exit.sh
-		echo "...9"
+		return 1
+	else
+		return 0
 	fi
-	echo "...10"
 }
 
 fn_query_gsquery(){
@@ -155,7 +154,6 @@ fn_query_tcp(){
 fn_monitor_query(){
 	local seconds_between_attempts="15"
 	local max_attempts="5"
-	local disable_gamedig_after_attempt="3"
 	echo "___1"
 
 # Will loop and query up to 5 times every 15 seconds.
@@ -163,7 +161,6 @@ fn_monitor_query(){
 start_time="$(date '+%s')"
 for queryattempt in $(seq 1 "$max_attempts"); do
 	log_current_query_info="$(($(date '+%s') - $start_time))s in attempt ${queryattempt}"
-	echo "___2 attempt: $queryattemp logdir? $lgsmlogdir exists=$([ -d "$lgsmlogdir" ] && echo true || echo false)"
 	for queryip in "${queryips[@]}"; do
 		echo "___3 $queryip" # av / wmc (query port not set) / zp failed & successful
 		#fn_print_dots "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
@@ -182,6 +179,8 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 		elif [ "${querymethod}" ==  "tcp" ]; then
 			echo "___18" # avserver failed
 			fn_query_tcp
+		else
+			fn_print_error "unhandled query method \"${querymethod}\""
 		fi
 		echo "___19"
 
@@ -192,62 +191,30 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 			#fn_print_ok_eol_nl
 			#fn_script_log_pass "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: OK"
 			monitorpass=1
-			if [ "${querystatus}" == "0" ]; then
-				echo "___24"
-				# Add query data to log.
-				if [ "${gdname}" ]; then
-					echo "___25"
-					fn_script_log_info "Server name: ${gdname}"
-				fi
-				if [ "${gdplayers}" ]; then
-					echo "___26"
-					fn_script_log_info "Players: ${gdplayers}/${gdmaxplayers}"
-				fi
-				if [ "${gdbots}" ]; then
-					echo "___27"
-					fn_script_log_info "Bots: ${gdbots}"
-				fi
-				if [ "${gdmap}" ]; then
-					echo "___28"
-					fn_script_log_info "Map: ${gdmap}"
-				fi
-				if [ "${gdgamemode}" ]; then
-					echo "___29"
-					fn_script_log_info "Game Mode: ${gdgamemode}"
-				fi
+			# Add query data to log.
+			if [ "${gdname}" ]; then
+				fn_script_log_info "Server name: ${gdname}"
+			fi
+			if [ "${gdplayers}" ]; then
+				fn_script_log_info "Players: ${gdplayers}/${gdmaxplayers}"
+			fi
+			if [ "${gdbots}" ]; then
+				fn_script_log_info "Bots: ${gdbots}"
+			fi
+			if [ "${gdmap}" ]; then
+				fn_script_log_info "Map: ${gdmap}"
+			fi
+			if [ "${gdgamemode}" ]; then
+				fn_script_log_info "Game Mode: ${gdgamemode}"
+			fi
 
-				# send LinuxGSM stats if monitor is OK.
-				if [ "${stats}" == "on" ]||[ "${stats}" == "y" ]; then
-					echo "___30"
-					info_stats.sh
-				fi
+			# send LinuxGSM stats if monitor is OK.
+			if [ "${stats}" == "on" ]||[ "${stats}" == "y" ]; then
+				echo "___30"
+				info_stats.sh
 			fi
 			echo "___31"
-			core_exit.sh
-		else
-			echo "___31"
-			# Server query FAIL.
-			#fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
-			#fn_print_fail_eol
-			#fn_script_log_warn "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: FAIL"
-			# Monitor will try gamedig (if supported) first then gsquery before restarting.
-			if [ "$queryattempt" -gt "$disable_gamedig_after_attempt" ]; then
-				echo "___35"
-				# Monitor will FAIL if over 60s and trigger gane server reboot.
-				#fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
-				#fn_print_fail_eol_nl
-				#fn_script_log_warn "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: FAIL"
-				# Send alert if enabled.
-				alert="restartquery"
-				alert.sh
-				echo "___39"
-				command_restart.sh
-				echo "___40"
-				fn_firstcommand_reset
-				echo "___41"
-				core_exit.sh
-			fi
-			echo "___42"
+			return 0
 		fi
 		echo "___43"
 	done
@@ -261,11 +228,14 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 	done
 	echo "___46"
 done
+return 1
 echo "___47"
 }
 
-fn_monitor_loop(){
-	echo "fn_monitor_loop ${querymode}"
+fn_monitor__await_execution_time(){
+	# Add a querydelay of 1 min if var missing.
+	querydelay="${querydelay:-"1"}"
+
 	last_execution="$(head -n 1 "${lockdir}/${selfname}.lock")"
 	delay_seconds="$((querydelay * 60))"
 	next_allowed_execution="$((last_execution + delay_seconds))"
@@ -278,7 +248,13 @@ fn_monitor_loop(){
 			sleep 1s
 		done
 	fi
+}
+
+fn_monitor_loop(){
+	fn_monitor__await_execution_time
 	echo "+5"
+	is_gamedig_installed="$([ "$(command -v gamedig 2>/dev/null)" ]&&[ "$(command -v jq 2>/dev/null)" ] && echo true || echo false)"
+
 	# loop though query methods selected by querymode.
 	totalseconds=0
 	if [ "${querymode}" == "2" ]; then
@@ -286,74 +262,56 @@ fn_monitor_loop(){
 	elif [ "${querymode}" == "3" ]; then
 		local query_methods_array=( gamedig )
 	elif [ "${querymode}" == "4" ]; then
-			local query_methods_array=( gsquery )
+		local query_methods_array=( gsquery )
 	elif [ "${querymode}" == "5" ]; then
 		local query_methods_array=( tcp )
 	fi
-			echo "+6"
+	echo "+6"
 	for querymethod in "${query_methods_array[@]}"; do
-			echo "+7 $querymethod"
+		echo "+7 $querymethod"
 		# Will check if gamedig is installed and bypass if not.
-		if [ "${querymethod}" == "gamedig" ]; then
-		echo "+8"
-			if [ "$(command -v gamedig 2>/dev/null)" ]&&[ "$(command -v jq 2>/dev/null)" ]; then
-			echo "+9"
-				if [ -z "${monitorpass}" ]; then
-				echo "+10"
-					fn_monitor_query
-				fi
-			else
-			echo "+11"
-				fn_script_log_info "gamedig is not installed"
-				echo "+12"
-				fn_script_log_info "https://docs.linuxgsm.com/requirements/gamedig"
-			fi
-			echo "+12"
-		else
-		echo "+13"
-			# will not query if query already passed.
-			if [ -z "${monitorpass}" ]; then
-			echo "+14"
-				fn_monitor_query
-			fi
+		if [ "${querymethod}" == "gamedig" ] && ! "$is_gamedig_installed"; then
+			fn_script_log_info "gamedig is not installed"
+			fn_script_log_info "https://docs.linuxgsm.com/requirements/gamedig"
+		elif [ -z "${monitorpass}" ] && fn_monitor_query; then
+			fn_print_ok "monitoring successful"
+			return 0
 		fi
-		echo "+15"
 	done
-	echo "+16"
+	return 1
 }
 
-echo "1"
 monitorflag=1
-echo "2"
 check.sh
-echo "3"
 core_logs.sh
-echo "4"
 info_game.sh
 
 # query pre-checks
-echo "5"
 fn_monitor_check_lockfile
-echo "6"
 fn_monitor_check_update
-echo "7"
 fn_monitor_check_session
-echo "8"
+
 # Monitor will not continue if session only check.
-if [ "${querymode}" != "1" ]; then
-	echo "9"
-	fn_monitor_check_queryport
-	echo "10"
+if [ "${querymode}" = "1" ]; then
+	exitcode="0"
+if fn_monitor_check_queryport; then
+	if fn_monitor_loop; then
+		exitcode="0"
+	else # restart 
+		fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
+		fn_print_fail_eol_nl
 
-	# Add a querydelay of 1 min if var missing.
-	if [ -z "${querydelay}" ]; then
-		echo "11"
-		querydelay="1"
+		alert="restartquery"
+		alert.sh
+		echo "___39"
+		(
+			command_restart.sh
+		)
+
+		fn_firstcommand_reset
+		exitcode="1"
 	fi
-
-	echo "12"
-	fn_monitor_loop
+else
+	exitcode="1"
 fi
-echo "13"
 core_exit.sh
-echo "14"
