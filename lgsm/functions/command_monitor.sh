@@ -109,30 +109,28 @@ fn_monitor_check_session(){
 
 fn_monitor_check_queryport(){
 	# Monitor will check queryport is set before continuing.
-	if grep -Eqe '^[0-9]+$' <<< "${queryport}"; then
+	if ! grep -qe '^[1-9][0-9]*$' <<< "${queryport}"; then
 		echo "...1"
 		fn_print_dots "Checking port: \"${queryport}\""
 		echo "...2"
-		fn_print_checking_eol
-		echo "...3"
-		fn_script_log_info "Checking port: CHECKING"
-		echo "...4"
+		#fn_print_checking_eol
+		#echo "...3"
+		#fn_script_log_info "Checking port: CHECKING"
+		#echo "...4"
 		if [ -n "${rconenabled}" ]&&[ "${rconenabled}" != "true" ]&&[ ${shortname} == "av" ]; then
 			echo "...5"
 			fn_print_warn "Checking port: Unable to query, rcon is not enabled"
-			echo "...6"
+			#echo "...6"
 			fn_script_log_warn "Checking port: Unable to query, rcon is not enabled"
 		else
 			echo "...6"
 			fn_print_error "Checking port: Unable to query, queryport is not set"
-			echo "...7"
+			#echo "...7"
 			fn_script_log_error "Checking port: Unable to query, queryport is not set"
 		fi
 		echo "...8"
 		core_exit.sh
 		echo "...9"
-	else
-		fn_print_warn "illegal queryport \"${queryport}\""
 	fi
 	echo "...10"
 }
