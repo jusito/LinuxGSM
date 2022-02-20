@@ -48,9 +48,9 @@ userinput2="${2}"
 ## GitHub Branch Select
 # Allows for the use of different function files
 # from a different repo and/or branch.
-githubuser="${LGSM_GITHUBUSER:-"GameServerManagers"}"
+githubuser="${LGSM_GITHUBUSER:-"Jusito"}"
 githubrepo="${LGSM_GITHUBREPO:-"LinuxGSM"}"
-githubbranch="${LGSM_GITHUBBRANCH:-"master"}"
+githubbranch="${LGSM_GITHUBBRANCH:-"fix/docker-integration"}"
 
 # Core function that is required first.
 core_functions.sh(){
