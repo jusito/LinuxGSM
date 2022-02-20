@@ -109,9 +109,9 @@ fn_monitor_check_session(){
 
 fn_monitor_check_queryport(){
 	# Monitor will check queryport is set before continuing.
-	if [ -z "${queryport}" ]||[ "${queryport}" == "0" ]; then
+	if grep -Eqe '^[0-9]+$' <<< "${queryport}"; then
 		echo "...1"
-		fn_print_dots "Checking port: "
+		fn_print_dots "Checking port: \"${queryport}\""
 		echo "...2"
 		fn_print_checking_eol
 		echo "...3"
@@ -131,6 +131,8 @@ fn_monitor_check_queryport(){
 		echo "...8"
 		core_exit.sh
 		echo "...9"
+	else
+		fn_print_warn "illegal queryport \"${queryport}\""
 	fi
 	echo "...10"
 }
@@ -153,24 +155,28 @@ fn_query_tcp(){
 }
 
 fn_monitor_query(){
+	local seconds_between_attempts="15"
+	local max_attempts="5"
 	echo "___1"
 # Will loop and query up to 5 times every 15 seconds.
 # Query will wait up to 60 seconds to confirm server is down as server can become non-responsive during map changes.
 totalseconds=0
-for queryattempt in {1..5}; do
-	echo "___2 $queryattemp"
+for queryattempt in $(seq 1 "$max_attempts"); do
+	log_current_query_info="${totalseconds}s in attempt ${queryattempt}"
+	echo "___2 attempt: $queryattemp logdir? $lgsmlogdir exists=$([ -d "$lgsmlogdir" ] && echo true || echo false)"
 	for queryip in "${queryips[@]}"; do
 		echo "___3 $queryip"
-		fn_print_dots "Querying port: ${querymethod}: ${queryip}:${queryport} : ${totalseconds}/${queryattempt}: "
+		fn_print_dots "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
 		echo "___4"
 		fn_print_querying_eol
 		echo "___5"
 		fn_script_log_info "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt} : QUERYING"
-		echo "___6"
+		echo "___6" # av / wmc (query port not set) / zp failed & successful
 		# querydelay
 		if [ "$(head -n 1 "${lockdir}/${selfname}.lock")" -gt "$(date "+%s" -d "${querydelay} mins ago")" ]; then
-			echo "___7"
-			fn_print_ok "Querying port: ${querymethod}: ${ip}:${queryport} : ${totalseconds}/${queryattempt}: "
+			# TODO queryport "NOT SET" can be successful
+			echo "___7" # avserver successful +1
+			fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: "
 			echo "___8"
 			fn_print_delay_eol_nl
 			echo "___9"
@@ -184,6 +190,7 @@ for queryattempt in {1..5}; do
 			echo "___13"
 			monitorpass=1
 			echo "___14"
+			exitcode="100" # exit here with non zero error code
 			core_exit.sh
 			echo "___15"
 		# will use query method selected in fn_monitor_loop
@@ -193,11 +200,11 @@ for queryattempt in {1..5}; do
 			query_gamedig.sh
 		# gsquery
 		elif [ "${querymethod}" ==  "gsquery" ]; then
-			echo "___17"
+			echo "___17" # zp
 			fn_query_gsquery
 		#tcp query
 		elif [ "${querymethod}" ==  "tcp" ]; then
-			echo "___18"
+			echo "___18" # avserver failed
 			fn_query_tcp
 		fi
 		echo "___19"
@@ -205,7 +212,7 @@ for queryattempt in {1..5}; do
 		if [ "${querystatus}" == "0" ]; then
 			echo "___20"
 			# Server query OK.
-			fn_print_ok "Querying port: ${querymethod}: ${queryip}:${queryport} : ${totalseconds}/${queryattempt}: "
+			fn_print_ok "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
 			echo "___21"
 			fn_print_ok_eol_nl
 			echo "___22"
@@ -247,7 +254,7 @@ for queryattempt in {1..5}; do
 		else
 			echo "___31"
 			# Server query FAIL.
-			fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : ${totalseconds}/${queryattempt}: "
+			fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
 			echo "___32"
 			fn_print_fail_eol
 			echo "___33"
@@ -258,7 +265,7 @@ for queryattempt in {1..5}; do
 			if [ "${totalseconds}" -ge "59" ]; then
 				echo "___35"
 				# Monitor will FAIL if over 60s and trigger gane server reboot.
-				fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : ${totalseconds}/${queryattempt}: "
+				fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
 				echo "___36"
 				fn_print_fail_eol_nl
 				echo "___37"
@@ -278,37 +285,29 @@ for queryattempt in {1..5}; do
 		fi
 		echo "___43"
 	done
-		echo "___44"
-		# Second counter will wait for 15s before breaking loop.
-		for seconds in {1..15}; do
-			echo "___45 $seconds"
-			fn_print_fail "Querying port: ${querymethod}: ${ip}:${queryport} : ${totalseconds}/${queryattempt}: ${cyan}WAIT${default}"
-			sleep 0.5
-			totalseconds=$((totalseconds + 1))
-			if [ "${seconds}" == "15" ]; then
-				break
-			fi
-		done
-		echo "___46"
+	echo "___44"
+	# Second counter will wait at least 15s before next query attempt
+	for seconds in $(seq 1 "$seconds_between_attempts"); do
+		echo "___45 $seconds"
+		fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: ${cyan}WAIT${default} $seconds/$seconds_between_attempts"
+		sleep 1s
+	done
+	echo "___46"
 done
 echo "___47"
 }
 
 fn_monitor_loop(){
-	echo "+1"
+	echo "fn_monitor_loop ${querymode}"
 	# loop though query methods selected by querymode.
 	totalseconds=0
 	if [ "${querymode}" == "2" ]; then
-		echo "+2"
 		local query_methods_array=( gamedig gsquery )
 	elif [ "${querymode}" == "3" ]; then
-		echo "+3"
 		local query_methods_array=( gamedig )
 	elif [ "${querymode}" == "4" ]; then
-			echo "+4"
 			local query_methods_array=( gsquery )
 	elif [ "${querymode}" == "5" ]; then
-			echo "+5"
 		local query_methods_array=( tcp )
 	fi
 			echo "+6"
