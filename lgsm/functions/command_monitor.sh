@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 # LinuxGSM command_monitor.sh module
 # Author: Daniel Gibbs
 # Contributors: http://linuxgsm.com/contrib
@@ -294,7 +295,7 @@ fn_monitor_check_session
 # Monitor will not continue if session only check.
 if [ "${querymode}" = "1" ]; then
 	exitcode="0"
-if fn_monitor_check_queryport; then
+elif fn_monitor_check_queryport; then
 	if fn_monitor_loop; then
 		exitcode="0"
 	else # restart 
