@@ -160,15 +160,15 @@ fn_monitor_query(){
 	echo "___1"
 # Will loop and query up to 5 times every 15 seconds.
 # Query will wait up to 60 seconds to confirm server is down as server can become non-responsive during map changes.
-totalseconds=0
+start_time="$(date '+%s')"
 for queryattempt in $(seq 1 "$max_attempts"); do
-	log_current_query_info="${totalseconds}s in attempt ${queryattempt}"
+	log_current_query_info="$(($(date '+%s') - $start_time))s in attempt ${queryattempt}"
 	echo "___2 attempt: $queryattemp logdir? $lgsmlogdir exists=$([ -d "$lgsmlogdir" ] && echo true || echo false)"
 	for queryip in "${queryips[@]}"; do
 		echo "___3 $queryip"
-		fn_print_dots "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
-		fn_print_querying_eol
-		fn_script_log_info "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt} : QUERYING"
+		#fn_print_dots "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
+		#fn_print_querying_eol
+		#fn_script_log_info "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt} : QUERYING"
 		echo "___6" # av / wmc (query port not set) / zp failed & successful
 		# querydelay
 		if [ "$(head -n 1 "${lockdir}/${selfname}.lock")" -gt "$(date "+%s" -d "${querydelay} mins ago")" ]; then
@@ -203,12 +203,9 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 		if [ "${querystatus}" == "0" ]; then
 			echo "___20"
 			# Server query OK.
-			fn_print_ok "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
-			echo "___21"
-			fn_print_ok_eol_nl
-			echo "___22"
-			fn_script_log_pass "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: OK"
-			echo "___23"
+			#fn_print_ok "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
+			#fn_print_ok_eol_nl
+			#fn_script_log_pass "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: OK"
 			monitorpass=1
 			if [ "${querystatus}" == "0" ]; then
 				echo "___24"
@@ -245,23 +242,17 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 		else
 			echo "___31"
 			# Server query FAIL.
-			fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
-			echo "___32"
-			fn_print_fail_eol
-			echo "___33"
-			fn_script_log_warn "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: FAIL"
-			echo "___34"
+			#fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
+			#fn_print_fail_eol
+			#fn_script_log_warn "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: FAIL"
 			# Monitor will try gamedig (if supported) for first 30s then gsquery before restarting.
 			# gsquery will fail if longer than 60s
-			if [ "${totalseconds}" -ge "59" ]; then
+			if [ "$(($(date '+%s') - $start_time))s" -ge "59" ]; then
 				echo "___35"
 				# Monitor will FAIL if over 60s and trigger gane server reboot.
 				#fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
-				echo "___36"
 				#fn_print_fail_eol_nl
-				echo "___37"
 				#fn_script_log_warn "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: FAIL"
-				echo "___38"
 				# Send alert if enabled.
 				alert="restartquery"
 				alert.sh
