@@ -167,29 +167,20 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 	for queryip in "${queryips[@]}"; do
 		echo "___3 $queryip"
 		fn_print_dots "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
-		echo "___4"
 		fn_print_querying_eol
-		echo "___5"
 		fn_script_log_info "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt} : QUERYING"
 		echo "___6" # av / wmc (query port not set) / zp failed & successful
 		# querydelay
 		if [ "$(head -n 1 "${lockdir}/${selfname}.lock")" -gt "$(date "+%s" -d "${querydelay} mins ago")" ]; then
 			# TODO queryport "NOT SET" can be successful
 			echo "___7" # avserver successful +1
-			fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: "
-			echo "___8"
-			fn_print_delay_eol_nl
-			echo "___9"
-			fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : ${queryattempt} : DELAY"
-			echo "___10"
-			fn_script_log_info "Query bypassed: ${gameservername} started less than ${querydelay} minutes ago"
-			echo "___11"
-			fn_script_log_info "Server started: $(date -d @$(head -n 1 "${lockdir}/${selfname}.lock"))"
-			echo "___12"
-			fn_script_log_info "Current time: $(date)"
-			echo "___13"
+			#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: "
+			#fn_print_delay_eol_nl
+			#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : ${queryattempt} : DELAY"
+			#fn_script_log_info "Query bypassed: ${gameservername} started less than ${querydelay} minutes ago"
+			#fn_script_log_info "Server started: $(date -d @$(head -n 1 "${lockdir}/${selfname}.lock"))"
+			#fn_script_log_info "Current time: $(date)"
 			monitorpass=1
-			echo "___14"
 			exitcode="100" # exit here with non zero error code
 			core_exit.sh
 			echo "___15"
@@ -265,11 +256,11 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 			if [ "${totalseconds}" -ge "59" ]; then
 				echo "___35"
 				# Monitor will FAIL if over 60s and trigger gane server reboot.
-				fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
+				#fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
 				echo "___36"
-				fn_print_fail_eol_nl
+				#fn_print_fail_eol_nl
 				echo "___37"
-				fn_script_log_warn "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: FAIL"
+				#fn_script_log_warn "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: FAIL"
 				echo "___38"
 				# Send alert if enabled.
 				alert="restartquery"
@@ -288,8 +279,9 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 	echo "___44"
 	# Second counter will wait at least 15s before next query attempt
 	for seconds in $(seq 1 "$seconds_between_attempts"); do
-		echo "___45 $seconds"
-		fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: ${cyan}WAIT${default} $seconds/$seconds_between_attempts"
+		# TODO temp commented out, healthcheck will only show last 4096 bytes
+		#echo "___45 $seconds"
+		#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: ${cyan}WAIT${default} $seconds/$seconds_between_attempts"
 		sleep 1s
 	done
 	echo "___46"
