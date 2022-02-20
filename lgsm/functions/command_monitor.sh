@@ -157,6 +157,7 @@ fn_query_tcp(){
 fn_monitor_query(){
 	local seconds_between_attempts="15"
 	local max_attempts="5"
+	local disable_gamedig_after_attempt="3"
 	echo "___1"
 # Will loop and query up to 5 times every 15 seconds.
 # Query will wait up to 60 seconds to confirm server is down as server can become non-responsive during map changes.
@@ -245,9 +246,8 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 			#fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
 			#fn_print_fail_eol
 			#fn_script_log_warn "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt}: FAIL"
-			# Monitor will try gamedig (if supported) for first 30s then gsquery before restarting.
-			# gsquery will fail if longer than 60s
-			if [ "$(($(date '+%s') - $start_time))s" -ge "59" ]; then
+			# Monitor will try gamedig (if supported) first then gsquery before restarting.
+			if [ "$queryattempt" -gt "$disable_gamedig_after_attempt" ]; then
 				echo "___35"
 				# Monitor will FAIL if over 60s and trigger gane server reboot.
 				#fn_print_fail "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
