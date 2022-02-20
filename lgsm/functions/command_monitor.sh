@@ -157,6 +157,21 @@ fn_monitor_query(){
 	local max_attempts="5"
 	local disable_gamedig_after_attempt="3"
 	echo "___1"
+
+	last_execution="$(head -n 1 "${lockdir}/${selfname}.lock")"
+	delay_seconds="$((querydelay * 60))"
+	next_allowed_execution="$((last_execution + delay_seconds))"
+	seconds_to_wait="$((next_allowed_execution - $(date '+%s')))"
+	
+	if [ "$seconds_to_wait" -gt "0" ]; then
+		fn_script_log_info "monitoring delayed for ${seconds_to_wait}s"
+		for i in $(seq 1 "$seconds_to_wait"); do
+			#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: ${cyan}WAIT${default} $seconds/$seconds_between_attempts"
+			sleep 1s
+		done
+	fi
+	echo "___2"
+
 # Will loop and query up to 5 times every 15 seconds.
 # Query will wait up to 60 seconds to confirm server is down as server can become non-responsive during map changes.
 start_time="$(date '+%s')"
@@ -164,28 +179,13 @@ for queryattempt in $(seq 1 "$max_attempts"); do
 	log_current_query_info="$(($(date '+%s') - $start_time))s in attempt ${queryattempt}"
 	echo "___2 attempt: $queryattemp logdir? $lgsmlogdir exists=$([ -d "$lgsmlogdir" ] && echo true || echo false)"
 	for queryip in "${queryips[@]}"; do
-		echo "___3 $queryip"
+		echo "___3 $queryip" # av / wmc (query port not set) / zp failed & successful
 		#fn_print_dots "Querying port: ${querymethod}: ${queryip}:${queryport} : $log_current_query_info: "
 		#fn_print_querying_eol
-		#fn_script_log_info "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt} : QUERYING"
-		echo "___6" # av / wmc (query port not set) / zp failed & successful
-		# querydelay
-		if [ "$(head -n 1 "${lockdir}/${selfname}.lock")" -gt "$(date "+%s" -d "${querydelay} mins ago")" ]; then
-			# TODO queryport "NOT SET" can be successful
-			echo "___7" # avserver successful +1
-			#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: "
-			#fn_print_delay_eol_nl
-			#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : ${queryattempt} : DELAY"
-			#fn_script_log_info "Query bypassed: ${gameservername} started less than ${querydelay} minutes ago"
-			#fn_script_log_info "Server started: $(date -d @$(head -n 1 "${lockdir}/${selfname}.lock"))"
-			#fn_script_log_info "Current time: $(date)"
-			monitorpass=1
-			exitcode="100" # exit here with non zero error code
-			core_exit.sh
-			echo "___15"
+		#fn_script_log_info "Querying port: ${querymethod}: ${queryip}:${queryport} : ${queryattempt} : QUERYING" 
 		# will use query method selected in fn_monitor_loop
 		# gamedig
-		elif [ "${querymethod}" ==  "gamedig" ]; then
+		if [ "${querymethod}" ==  "gamedig" ]; then
 			echo "___16"
 			query_gamedig.sh
 		# gsquery
