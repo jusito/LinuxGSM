@@ -219,7 +219,7 @@ monitorflag=1
 check.sh
 core_logs.sh
 info_game.sh
-set -euo pipefail
+set -eo pipefail
 
 # query pre-checks
 fn_monitor_check_lockfile
