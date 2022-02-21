@@ -69,17 +69,17 @@ fn_monitor_check_session(){
 }
 
 fn_monitor_check_queryport(){
-	fn_print_dots "Checking port: \"${queryport}\""
+	fn_print_dots "Checking port value: \"${queryport}\""
 
 	if ! grep -qe '^[1-9][0-9]*$' <<< "${queryport}"; then
 		if [ -n "${rconenabled}" ]&&[ "${rconenabled}" != "true" ]&&[ ${shortname} == "av" ]; then
-			fn_print_error_nl "Checking port: Unable to query, rcon is not enabled"
+			fn_print_error_nl "Checking port value: Unable to query, rcon is not enabled"
 		else
-			fn_print_error_nl "Checking port: Unable to query, queryport is not set"
+			fn_print_error_nl "Checking port value: Unable to query, queryport is not set"
 		fi
 		return 1
 	else
-		fn_print_ok_nl "Checking port: \"${queryport}\""
+		fn_print_ok_nl "Checking port value: \"${queryport}\""
 	fi
 	return 0
 }
@@ -98,17 +98,16 @@ fn_query_tcp(){
 }
 
 fn_monitor_query(){
-	local seconds_between_attempts="15"
 	local max_attempts="5"
 
 	# Will loop and query up to 5 times every 15 seconds.
 	# Query will wait up to 60 seconds to confirm server is down as server can become non-responsive during map changes.
 	start_time="$(date '+%s')"
-	for queryattempt in $(seq 1 "$max_attempts"); do
-		log_current_query_info="$(($(date '+%s') - $start_time))s in attempt ${queryattempt}"
+	for queryattempt in $(seq 1 "${max_attempts}"); do
+
 		for queryip in "${queryips[@]}"; do
-			log_msg="Starting to query in mode \"${querymethod}\" to target \"${queryip}:${queryport}\" $log_current_query_info"
-			fn_print_dots "$log_msg"
+			log_msg="Starting to query in mode \"${querymethod}\" to target \"${queryip}:${queryport}\" attempt ${queryattempt}"
+			fn_print_dots "${log_msg}"
 
 			# will use query method selected in fn_monitor_loop
 			querystatus="100"
@@ -122,12 +121,12 @@ fn_monitor_query(){
 				fn_query_tcp
 
 			else
-				fn_print_fail_nl "$log_msg reason: unhandled query method \"${querymethod}\""
+				fn_print_fail_nl "${log_msg} reason: unhandled query method \"${querymethod}\""
 			fi
 			
 			# if serverquery is fine
 			if [ "${querystatus}" == "0" ]; then
-				fn_print_dots_nl "$log_msg"
+				fn_print_ok_nl "${log_msg}"
 
 				# Add query data to log.
 				if [ "${gdname}" ]; then
@@ -153,19 +152,10 @@ fn_monitor_query(){
 
 				return 0
 			else
-				fn_print_fail_nl "$log_msg reason: illegal script state \"$querystatus\""
+				fn_print_warn_nl "${log_msg} querystatus=\"${querystatus}\""
 			fi
-			echo "___43"
 		done
-
-		# Second counter will wait at least 15s before next query attempt
-		for seconds in $(seq 1 "$seconds_between_attempts"); do
-			#fn_script_log_info "Querying port: ${querymethod}: ${ip}:${queryport} : $log_current_query_info: ${cyan}WAIT${default} $seconds/$seconds_between_attempts"
-			sleep 1s
-		done
-		echo "___46"
 	done
-	echo "___47"
 	return 1
 }
 
@@ -178,18 +168,18 @@ fn_monitor__await_execution_time(){
 	next_allowed_execution="$((last_execution + delay_seconds))"
 	seconds_to_wait="$((next_allowed_execution - $(date '+%s')))"
 	
-	if [ "$seconds_to_wait" -gt "0" ]; then
+	if [ "${seconds_to_wait}" -gt "0" ]; then
 		fn_print_dots "monitoring delayed for ${seconds_to_wait}s"
-		for i in $(seq 1 "$seconds_to_wait"); do
+		for i in $(seq 1 "${seconds_to_wait}"); do
 			sleep 1s
+			fn_print_info "monitoring delayed for ${i}/${seconds_to_wait}s"
 		done
-		fn_print_ok_nl "monitoring delayed for ${seconds_to_wait}s"
+		fn_print_info_nl "monitoring delayed for ${seconds_to_wait}s"
 	fi
 }
 
 fn_monitor_loop(){
-	fn_monitor__await_execution_time
-	is_gamedig_installed="$([ "$(command -v gamedig 2>/dev/null)" ]&&[ "$(command -v jq 2>/dev/null)" ] && echo true || echo false )"
+	is_gamedig_installed="$( command -v gamedig 2>/dev/null 1>&2 && command -v jq 2>/dev/null 1>&2 && echo true || echo false )"
 
 	# loop though query methods selected by querymode.
 	if [ "${querymode}" == "2" ]; then
@@ -204,7 +194,7 @@ fn_monitor_loop(){
 
 	for querymethod in "${query_methods_array[@]}"; do
 		# Will check if gamedig is installed and bypass if not.
-		if [ "${querymethod}" == "gamedig" ] && ! "$is_gamedig_installed"; then
+		if [ "${querymethod}" == "gamedig" ] && ! "${is_gamedig_installed}"; then
 			fn_print_warn_nl "gamedig is not installed"
 			fn_print_warn_nl "https://docs.linuxgsm.com/requirements/gamedig"
 		elif fn_monitor_query; then
@@ -222,16 +212,16 @@ info_game.sh
 set -eo pipefail
 
 # query pre-checks
+fn_monitor__await_execution_time
 fn_monitor_check_lockfile
 fn_monitor_check_update
-session_check_failed="$(fn_monitor_check_session && echo false || echo true )"
 session_check_only="$([ "${querymode}" = "1" ] && echo true || echo false )"
 
-if "$session_check_failed"; then
+if ! fn_monitor_check_session; then
 	fn__restart_server "restart"
 	exitcode="2"
 
-elif "$session_check_only"; then
+elif "${session_check_only}"; then
 	exitcode="0"
 
 elif fn_monitor_check_queryport; then
