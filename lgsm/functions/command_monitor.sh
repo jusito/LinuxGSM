@@ -98,15 +98,17 @@ fn_query_tcp(){
 }
 
 fn_monitor_query(){
+	local fail_after="60" # seconds
+	local time_per_attempt="3"
 	local max_attempts="5"
+	local wait_between_attempts="$(( (fail_after-max_attempts*time_per_attempt) / (max_attempts-1) ))"
 
 	# Will loop and query up to 5 times every 15 seconds.
 	# Query will wait up to 60 seconds to confirm server is down as server can become non-responsive during map changes.
-	start_time="$(date '+%s')"
-	for queryattempt in $(seq 1 "${max_attempts}"); do
+	for queryattempt in $(seq 1 "${max_attempts}" ); do
 
 		for queryip in "${queryips[@]}"; do
-			log_msg="Starting to query in mode \"${querymethod}\" to target \"${queryip}:${queryport}\" attempt ${queryattempt}"
+			log_msg="Starting to query in mode \"${querymethod}\" to target \"${queryip}:${queryport}\" attempt ${queryattempt} / ${max_attempts}"
 			fn_print_dots "${log_msg}"
 
 			# will use query method selected in fn_monitor_loop
@@ -155,6 +157,15 @@ fn_monitor_query(){
 				fn_print_warn_nl "${log_msg} querystatus=\"${querystatus}\""
 			fi
 		done
+
+		if [ "${queryattempt}" != "${max_attempts}" ]; then
+			fn_print_info "delayed next attempt for ${wait_between_attempts}s, e.g. maybe it failed because of map change"
+			for i in $(seq 1 "${wait_between_attempts}"); do
+				sleep 1s
+				fn_print_info "delayed next attempt for $((wait_between_attempts - i))s, e.g. maybe it failed because of map change"
+			done
+			fn_print_info_nl "monitoring delayed for ${seconds_to_wait}s, e.g. maybe it failed because of map change"
+		fi
 	done
 	return 1
 }
@@ -170,9 +181,9 @@ fn_monitor__await_execution_time(){
 	
 	if [ "${seconds_to_wait}" -gt "0" ]; then
 		fn_print_dots "monitoring delayed for ${seconds_to_wait}s"
-		for i in $(seq 1 "${seconds_to_wait}"); do
+		for i in $(seq "${seconds_to_wait}" 1 -1); do
 			sleep 1s
-			fn_print_info "monitoring delayed for ${i}/${seconds_to_wait}s"
+			fn_print_info "monitoring delayed for ${i}s"
 		done
 		fn_print_info_nl "monitoring delayed for ${seconds_to_wait}s"
 	fi
