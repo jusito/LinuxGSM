@@ -14,4 +14,8 @@ servercode="$1"
     touch .dev-debug
     ./linuxgsm.sh "$servercode"
     ./"$servercode" auto-install
+    ./"$servercode" start
+    ./"$servercode" details
+    ./"$servercode" monitor
+    ./"$servercode" stop
 )
