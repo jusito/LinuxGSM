@@ -72,7 +72,7 @@ fn_monitor_check_queryport(){
 	fn_print_dots "Checking port value: \"${queryport}\""
 
 	if ! grep -qe '^[1-9][0-9]*$' <<< "${queryport}"; then
-		if [ -n "${rconenabled}" ]&&[ "${rconenabled}" != "true" ]&&[ ${shortname} == "av" ]; then
+		if [ -n "${rconenabled}" ]&&[ "${rconenabled}" != "true" ]&&[ "${shortname}" == "av" ]; then
 			fn_print_error_nl "Checking port value: Unable to query, rcon is not enabled"
 		else
 			fn_print_error_nl "Checking port value: Unable to query, queryport is not set"
@@ -93,7 +93,7 @@ fn_query_gsquery(){
 }
 
 fn_query_tcp(){
-	bash -c 'exec 3<> /dev/tcp/'${queryip}'/'${queryport}'' > /dev/null 2>&1
+	bash -c "exec 3<> '/dev/tcp/${queryip}/${queryport}'" > /dev/null 2>&1
 	querystatus="$?"
 }
 
