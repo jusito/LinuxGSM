@@ -15,9 +15,10 @@ fn__restart_server() {
 	alert="${1:?}}"
 	alert.sh
 	(
+		fn_print_info_nl "Restarting the server and skip immediate exit"
 		command_restart.sh
+		fn_print_info_nl "skipped exit"
 	)
-
 	fn_firstcommand_reset
 }
 
