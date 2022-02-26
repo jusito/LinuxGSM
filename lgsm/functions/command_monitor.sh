@@ -16,8 +16,10 @@ fn__restart_server() {
 	alert.sh
 	(
 		fn_print_info_nl "Restarting the server and skip immediate exit"
-		command_restart.sh
-		fn_print_info_nl "skipped exit"
+		exitbypass=1
+		command_stop.sh
+		command_start.sh
+		echo "" # start doesn't always print newline
 	)
 	fn_firstcommand_reset
 }
@@ -105,7 +107,7 @@ fn_monitor_query(){
 	for queryattempt in $(seq 1 "${max_attempts}" ); do
 
 		for queryip in "${queryips[@]}"; do
-			log_msg="Starting to query in mode \"${querymethod}\" to target \"${queryip}:${queryport}\" attempt ${queryattempt} / ${max_attempts}"
+			local log_msg="Starting to query in mode \"${querymethod}\" to target \"${queryip}:${queryport}\" attempt ${queryattempt} / ${max_attempts}"
 			fn_print_dots "${log_msg}"
 
 			# will use query method selected in fn_monitor_loop
@@ -156,12 +158,13 @@ fn_monitor_query(){
 		done
 
 		if [ "${queryattempt}" != "${max_attempts}" ]; then
-			fn_print_info "delayed next attempt for ${wait_between_attempts}s, e.g. maybe it failed because of map change"
+			local explanation="e.g. maybe it failed because of server starting / map change / workshop download"
+			fn_print_info "delayed next attempt for ${wait_between_attempts}s, $explanation"
 			for i in $(seq 1 "${wait_between_attempts}"); do
 				sleep 1s
-				fn_print_info "delayed next attempt for $((wait_between_attempts - i))s, e.g. maybe it failed because of map change"
+				fn_print_info "delayed next attempt for $((wait_between_attempts - i))s, $explanation"
 			done
-			fn_print_info_nl "monitoring delayed for ${seconds_to_wait}s, e.g. maybe it failed because of server starting / map change / workshop download"
+			fn_print_info_nl "monitoring delayed for ${wait_between_attempts}s, $explanation"
 		fi
 	done
 	return 1

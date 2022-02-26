@@ -16,9 +16,10 @@
 
 # Debugging
 if [ -f ".dev-debug" ]; then
-	exec 5>dev-debug.log
+	exec 5>>dev-debug.log
 	BASH_XTRACEFD="5"
 	set -x
+	echo "invocation linuxgsm.sh $@ $(date "+%Y-%m-%d-%H:%M:%S:%N")"
 fi
 
 version="v21.5.1"
