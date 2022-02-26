@@ -73,7 +73,7 @@ fn_monitor__is_queryport_valid(){
 	fn_print_dots "Checking port value: \"${queryport}\""
 
 	if ! grep -qe '^[1-9][0-9]*$' <<< "${queryport}"; then
-		fn_print_error_nl "Checking port value: Unable to query, queryport is illegal \"${queryport}\" and rcon=\"${rconenabled}\""
+		fn_print_error_nl "Checking port value: Unable to query, queryport is illegal \"${queryport}\" and rcon=\"${rconenabled}\". This can be fine if server didn't already create the config file so we couldn't extract information from it, try to rerun."
 		return 1
 	else
 		fn_print_ok_nl "Checking port value: \"${queryport}\""
@@ -161,7 +161,7 @@ fn_monitor_query(){
 				sleep 1s
 				fn_print_info "delayed next attempt for $((wait_between_attempts - i))s, e.g. maybe it failed because of map change"
 			done
-			fn_print_info_nl "monitoring delayed for ${seconds_to_wait}s, e.g. maybe it failed because of map change"
+			fn_print_info_nl "monitoring delayed for ${seconds_to_wait}s, e.g. maybe it failed because of server starting / map change / workshop download"
 		fi
 	done
 	return 1
@@ -237,8 +237,8 @@ elif "${check_only_if_running}"; then
 	exitcode="0"
 
 elif ! fn_monitor__is_queryport_valid; then
-	exitcode="2" # error because unfixable
-	# no restart because config issue
+	exitcode="2" # error because maybe unfixable
+	# no restart because config issue !
 
 # server could be queried with tcp / gsquery / gamedig
 elif fn_monitor_loop; then
