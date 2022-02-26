@@ -12,16 +12,20 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 fn_firstcommand_set
 
 fn__restart_server() {
-	alert="${1:?}}"
-	alert.sh
-	(
-		fn_print_info_nl "Restarting the server and skip immediate exit"
-		exitbypass=1
-		command_stop.sh
-		command_start.sh
-		echo "" # start doesn't always print newline
-	)
-	fn_firstcommand_reset
+	if [ -f "${lockdir}/${selfname}.lock" ]; then
+		alert="${1:?}}"
+		alert.sh
+		(
+			fn_print_info_nl "Restarting the server and skip immediate exit"
+			exitbypass=1
+			command_stop.sh
+			command_start.sh
+			echo "" # start doesn't always print newline
+		)
+		fn_firstcommand_reset
+	else
+		fn_print_warn_nl "Skipping server restart because lockfile is missing, probably server is restarted during monitor execution."
+	fi
 }
 
 fn_monitor_check_lockfile(){
@@ -30,8 +34,7 @@ fn_monitor_check_lockfile(){
 	# Monitor does not run if lockfile is not found.
 	if [ ! -f "${lockdir}/${selfname}.lock" ]; then
 		fn_print_fail_nl "Checking lockfile: No lockfile found"
-		echo -e "* Start ${selfname} to run monitor."
-		exitcode="1"
+		exitcode="3"
 		core_exit.sh
 	
 	# Fix if lockfile is not unix time or contains letters
