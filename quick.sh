@@ -15,7 +15,7 @@ servercode="$1"
     ./linuxgsm.sh "$servercode"
     ./"$servercode" auto-install
     ./"$servercode" start
-    ./"$servercode" details
-    ./"$servercode" monitor
+    ./"$servercode" details || echo "details failed"
+    ./"$servercode" monitor || echo "monitor failed"
     ./"$servercode" stop
 )
