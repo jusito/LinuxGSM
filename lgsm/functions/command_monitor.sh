@@ -55,7 +55,7 @@ fn_monitor_check_update(){
 	fi
 }
 
-fn_monitor_check_session(){
+fn_monitor__is_server_running(){
 	fn_print_dots "Checking session"
 
 	# uses status var from check_status.sh
@@ -68,15 +68,11 @@ fn_monitor_check_session(){
 	fi
 }
 
-fn_monitor_check_queryport(){
+fn_monitor__is_queryport_valid(){
 	fn_print_dots "Checking port value: \"${queryport}\""
 
 	if ! grep -qe '^[1-9][0-9]*$' <<< "${queryport}"; then
-		if [ -n "${rconenabled}" ]&&[ "${rconenabled}" != "true" ]&&[ "${shortname}" == "av" ]; then
-			fn_print_error_nl "Checking port value: Unable to query, rcon is not enabled"
-		else
-			fn_print_error_nl "Checking port value: Unable to query, queryport is not set"
-		fi
+		fn_print_error_nl "Checking port value: Unable to query, queryport is illegal \"${queryport}\" and rcon=\"${rconenabled}\""
 		return 1
 	else
 		fn_print_ok_nl "Checking port value: \"${queryport}\""
@@ -201,6 +197,9 @@ fn_monitor_loop(){
 		local query_methods_array=( gsquery )
 	elif [ "${querymode}" == "5" ]; then
 		local query_methods_array=( tcp )
+	else
+		fn_print_fail_nl "monitoring function invoced but querymode has an illegal value ${querymode}"
+		return 1
 	fi
 
 	for querymethod in "${query_methods_array[@]}"; do
@@ -220,31 +219,33 @@ monitorflag=1
 check.sh
 core_logs.sh
 info_game.sh
-set -eo pipefail
 
 # query pre-checks
 fn_monitor__await_execution_time
 fn_monitor_check_lockfile
 fn_monitor_check_update
-session_check_only="$([ "${querymode}" = "1" ] && echo true || echo false )"
+check_only_if_running="$([ "${querymode}" == "1" ] && echo true || echo false )"
 
-if ! fn_monitor_check_session; then
+exitcode="1" # if not altered below, coding error => FATAL
+if ! fn_monitor__is_server_running; then
 	fn__restart_server "restart"
-	exitcode="2"
+	exitcode="3"
 
-elif "${session_check_only}"; then
+# if monitor should only check only session
+elif "${check_only_if_running}"; then
 	exitcode="0"
 
-elif fn_monitor_check_queryport; then
-	if fn_monitor_loop; then
-		exitcode="0"
-	else
-		fn__restart_server "restartquery"
-		exitcode="2"
-	fi
+elif ! fn_monitor__is_queryport_valid; then
+	exitcode="2" # error because unfixable
+	# no restart because config issue
+
+# server could be queried with tcp / gsquery / gamedig
+elif fn_monitor_loop; then
+	exitcode="0"
 
 else
-	exitcode="2"
+	fn__restart_server "restartquery"
+	exitcode="3"
 fi
 
 core_exit.sh
