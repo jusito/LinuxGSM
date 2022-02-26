@@ -323,6 +323,7 @@ fn_info_game_cod(){
 	defaultmap=${defaultmap:-"NOT SET"}
 	maxplayers=${maxplayers:-"0"}
 	port=${port:-"0"}
+	queryport=${port:-"28960"}
 }
 
 fn_info_game_coduo(){
