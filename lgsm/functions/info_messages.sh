@@ -771,7 +771,7 @@ fn_port(){
 		portname="${1}"
 		porttype="${2}"
 		portprotocol="${3}"
-		echo -e "${portname}\t${!porttype}\t${portprotocol}\t$(echo "${ssinfo}" | grep ${portprotocol} | grep ${!porttype} | wc -l)"
+		echo -e "${portname}\t${!porttype}\t${portprotocol}\t$(echo "${ssinfo}" | grep \"${portprotocol}\" | grep \"${!porttype}\" | wc -l)"
 	fi
 }
 
