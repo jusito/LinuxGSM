@@ -111,7 +111,7 @@ fn_info_game_av() {
 		servername=$(grep "name=" "${servercfgfullpath}" | sed 's/name=//')
 		serverpassword=$(grep "password=" "${servercfgfullpath}" | sed 's/password=//')
 		port=$(grep "port=" "${servercfgfullpath}" | sed 's/port=//')
-		queryport=$(grep "queryport=" "${servercfgfullpath}" | sed 's/queryport=//')
+		queryport=$((port))
 		steamqueryport=$((port+20))
 		steammasterport=$((port+21))
 		rconport=$(grep "rconPort=" "${servercfgfullpath}" | sed 's/rconPort=//')
