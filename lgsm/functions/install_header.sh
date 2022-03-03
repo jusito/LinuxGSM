@@ -11,7 +11,7 @@ clear
 fn_print_ascii_logo
 fn_sleep_time
 echo -e "================================="
-echo -e "${lightyellow}Linux${default}GSM_"
+echo -e "${lightyellow}Linux${default}GSM:"
 echo -e "by Daniel Gibbs"
 echo -e "${lightblue}Version:${default} ${version}"
 echo -e "${lightblue}Game:${default} ${gamename}"
