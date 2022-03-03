@@ -184,7 +184,7 @@ fn_monitor__await_execution_time(){
 	
 	if [ "${seconds_to_wait}" -gt "0" ]; then
 		fn_print_dots "monitoring delayed for ${seconds_to_wait}s"
-		for i in $(seq "${seconds_to_wait}" 1 -1); do
+		for i in $(seq "${seconds_to_wait}" -1 1); do
 			sleep 1s
 			fn_print_info "monitoring delayed for ${i}s"
 		done
