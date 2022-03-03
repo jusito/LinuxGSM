@@ -2,3 +2,5 @@
 .idea
 build
 *.patch
+Dockerfile.Mumble
+gamespy.sh
