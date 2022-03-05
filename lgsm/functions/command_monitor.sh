@@ -78,7 +78,7 @@ fn_monitor__is_queryport_valid(){
 	fn_print_dots "Checking port value: \"${queryport}\""
 
 	if ! grep -qe '^[1-9][0-9]*$' <<< "${queryport}"; then
-		fn_print_error_nl "Checking port value: Unable to query, queryport is illegal \"${queryport}\" and rcon=\"${rconenabled}\". This can be fine if server didn't already create the config file so we couldn't extract information from it, try to rerun."
+		fn_print_error_nl "Checking port value: \"${queryport}\" - Unable to query, queryport is illegal \"${queryport}\" and rcon=\"${rconenabled}\". This can be fine if server didn't already create the config file so we couldn't extract information from it, try to rerun."
 		return 1
 	else
 		fn_print_ok_nl "Checking port value: \"${queryport}\""
@@ -160,6 +160,22 @@ fn_monitor_query(){
 			fi
 		done
 
+		# monitoring attempt failed, show details:
+		if ! ss -tuplwn | grep -qFe ":${queryport} "; then
+			fn_print_warn_nl "Port is not in use right now \"${queryport}\""
+		else
+			local process_using_port="$( ss -tuplwn "( dport = :${queryport} or sport = :${queryport} )" | grep -o '[^ ]*$')"
+			local listen_on="$( ss -tuplwn "( dport = :${queryport} or sport = :${queryport} )" | grep -o "[^ ]*:${queryport} ")"
+
+			local msg="Found application \"${process_using_port}\" which listens on \"${listen_on}\""
+			if ! ss -tuplwn "( dport = :${queryport} or sport = :${queryport} )" | grep -qs '^[^ ]*\s*[^ ]*\s*0\s*'; then
+				fn_print_warn_nl "$msg but Recv-Q isn't empty. Server didn't read the message we send, e.g. server is booting or has an issue which prevents correct initialization."
+			else
+				fn_print_info_nl "$msg and Recv-Q is empty."
+			fi
+		fi
+
+		# delay next init
 		if [ "${queryattempt}" != "${max_attempts}" ]; then
 			local explanation="e.g. maybe it failed because of server starting / map change / workshop download"
 			fn_print_info "delayed next attempt for ${wait_between_attempts}s, $explanation"
