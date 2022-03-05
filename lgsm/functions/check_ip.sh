@@ -51,13 +51,13 @@ elif fn__is_valid_ip "${configip}";then
 # If there is only 1 server IP address.
 # Some IP details can automaticly use the one IP
 elif [ "${getipwc}" == "1" ]; then
-	queryips=( $(echo "${getip}") )
+	queryips=( "127.0.0.1" $(echo "${getip}") )
 	ip="0.0.0.0"
 	webadminip=( "${getip}" )
 	telnetip=( "${getip}" )
 # If no ip is set by the user and server has more than one IP.
 else
-	queryips=( $(echo "${getip}") )
+	queryips=( "127.0.0.1" $(echo "${getip}") )
 	ip="0.0.0.0"
 	webadminip=( "${ip}" )
 	telnetip=( "${ip}" )
