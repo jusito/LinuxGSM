@@ -45,7 +45,7 @@ fn_apply_fix() {
 	local phase_message="${1:?}"
 	local short="${2:?}"
 	
-	if fn_exists_fix; then
+	if fn_exists_fix "${short}"; then
 		"fix_${short}.sh"
 	else
 		fn_print_error_nl "${shortname} is marked to apply pre start fix but there is no fix registered"
@@ -70,14 +70,14 @@ if [ "${commandname}" != "INSTALL" ]&&[ -z "${fixbypass}" ]; then
 		fix_steamcmd.sh
 	fi
 	
-	if grep -qe "(^|\s)${shortname}(\s|$)" <<< "${apply_pre_start_fix[@]}"; then
+	if grep -qEe "(^|\s)${shortname}(\s|$)" <<< "${apply_pre_start_fix[@]}"; then
 		fn_apply_fix "pre start" "${shortname}"
 	fi
 fi
 
 # Fixes that are run on install only.
 if [ "${commandname}" == "INSTALL" ]; then
-	if grep -qe "(^|\s)${shortname}(\s|$)" <<< "${apply_post_install_fix[@]}"; then
+	if grep -qEe "(^|\s)${shortname}(\s|$)" <<< "${apply_post_install_fix[@]}"; then
 		echo -e ""
 		echo -e "${lightyellow}Applying Post-Install Fixes${default}"
 		echo -e "================================="
