@@ -346,6 +346,11 @@ functionfile="${FUNCNAME[0]}"
 fn_fetch_function
 }
 
+fix_bfv.sh(){
+functionfile="${FUNCNAME[0]}"
+fn_fetch_function
+}
+
 fix_cmw.sh(){
 functionfile="${FUNCNAME[0]}"
 fn_fetch_function
