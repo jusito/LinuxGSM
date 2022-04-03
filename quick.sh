@@ -13,7 +13,7 @@ servercode="$1"
     cd build
     touch .dev-debug
     ./linuxgsm.sh "$servercode"
-    ./"$servercode" auto-install | (
+    ./"$servercode" auto-install || (
         mkdir -p "lgsm/config-lgsm/$servercode/"
         echo 'steamuser="username"' > "lgsm/config-lgsm/$servercode/common.cfg"
         echo "steampass='password'" >> "lgsm/config-lgsm/$servercode/common.cfg"
