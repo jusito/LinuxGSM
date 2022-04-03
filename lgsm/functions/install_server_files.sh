@@ -10,6 +10,10 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 fn_install_server_files(){
 	if [ "${shortname}" == "ahl" ]; then
 		remote_fileurl="http://linuxgsm.download/ActionHalfLife/action_halflife-1.0.tar.xz"; local_filedir="${tmpdir}"; local_filename="action_halflife-1.0.tar.xz"; chmodx="nochmodx" run="norun"; force="noforce"; md5="61d7b79fd714888b6d65944fdaafa94a"
+	elif [ "${shortname}" == "bd" ]; then
+		# update to https://sjc7.dl.dbolical.com/dl/2017/11/16/bdef1803_release.zip?st=_egiq1ZS4J1Cr6-k180B2Q==&e=1645292484
+		# or remove
+		remote_fileurl="https://s3.amazonaws.com/linuxgsm/base_defense_1775.tar.gz"; local_filedir="${tmpdir}"; local_filename="base_defense_1775.tar.gz";  chmodx="nochmodx" run="norun"; force="noforce"; md5="a272b65ab014d9e9a103fad26ce11ea5"
 	elif [ "${shortname}" == "bf1942" ]; then
 		remote_fileurl="http://linuxgsm.download/BattleField1942/bf1942_lnxded-1.61-hacked-to-1.612.full.tar.xz"; local_filedir="${tmpdir}"; local_filename="bf1942_lnxded-1.61-hacked-to-1.612.full.tar.xz"; chmodx="nochmodx" run="norun"; force="noforce"; md5="4223bf4ed85f5162c24b2cba51249b9e"
 	elif [ "${shortname}" == "bfv" ];then
