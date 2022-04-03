@@ -15,9 +15,10 @@
 
 # Debugging
 if [ -f ".dev-debug" ]; then
-	exec 5>dev-debug.log
+	exec 5>>dev-debug.log
 	BASH_XTRACEFD="5"
 	set -x
+	echo "invocation linuxgsm.sh $@ $(date "+%Y-%m-%d-%H:%M:%S:%N")"
 fi
 
 version="v21.5.1"
@@ -47,9 +48,9 @@ userinput2="${2}"
 ## GitHub Branch Select
 # Allows for the use of different function files
 # from a different repo and/or branch.
-[ -n "${LGSM_GITHUBUSER}" ] && githubuser="${LGSM_GITHUBUSER}" || githubuser="GameServerManagers"
-[ -n "${LGSM_GITHUBREPO}" ] && githubrepo="${LGSM_GITHUBREPO}" || githubrepo="LinuxGSM"
-[ -n "${LGSM_GITHUBBRANCH}" ] && githubbranch="${LGSM_GITHUBBRANCH}" || githubbranch="master"
+githubuser="${LGSM_GITHUBUSER:-"GameServerManagers"}"
+githubrepo="${LGSM_GITHUBREPO:-"LinuxGSM"}"
+githubbranch="${LGSM_GITHUBBRANCH:-"master"}"
 
 # Core function that is required first.
 core_functions.sh(){
