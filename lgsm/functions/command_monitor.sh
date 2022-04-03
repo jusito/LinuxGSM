@@ -160,16 +160,16 @@ fn_monitor_query(){
 			fi
 		done
 
-		# monitoring attempt failed, show details:
+		# monitoring attempt failed, show details to resolve the issue:
 		if ! ss -tuplwn | grep -qFe ":${queryport} "; then
-			fn_print_warn_nl "Port is not in use right now \"${queryport}\""
+			fn_print_warn_nl "Port is not in use right now \"${queryport}\". Check command details for ports, use provided command to check if every port is used + console to validate server is booted. Maybe server didn't boot, e.g. another port is already used or wrong config."
 		else
 			local process_using_port="$( ss -tuplwn "( dport = :${queryport} or sport = :${queryport} )" | grep -o '[^ ]*$')"
 			local listen_on="$( ss -tuplwn "( dport = :${queryport} or sport = :${queryport} )" | grep -o "[^ ]*:${queryport} ")"
 
 			local msg="Found application \"${process_using_port}\" which listens on \"${listen_on}\""
 			if ! ss -tuplwn "( dport = :${queryport} or sport = :${queryport} )" | grep -qs '^[^ ]*\s*[^ ]*\s*0\s*'; then
-				fn_print_warn_nl "$msg but Recv-Q isn't empty. Server didn't read the message we send, e.g. server is booting or has an issue which prevents correct initialization."
+				fn_print_warn_nl "$msg but Recv-Q isn't empty. Server didn't read the message we send, e.g. server is booting, has an issue which prevents correct initialization or the port is in use by another program."
 			else
 				fn_print_info_nl "$msg and Recv-Q is empty."
 			fi
