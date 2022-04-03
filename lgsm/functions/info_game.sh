@@ -323,6 +323,7 @@ fn_info_game_cod(){
 	defaultmap=${defaultmap:-"NOT SET"}
 	maxplayers=${maxplayers:-"0"}
 	port=${port:-"0"}
+	queryport=${port:-"28960"}
 }
 
 fn_info_game_coduo(){
@@ -1784,6 +1785,7 @@ fn_info_game_terraria(){
 		maxplayers="${zero}"
 		queryport="${zero}"
 	else
+		# assuming config file has precedence over commandline arguments
 		servername=$(grep "worldname" "${servercfgfullpath}" | sed -e 's/^[ \t]*//g' -e '/^#/d' -e 's/worldname//g' | tr -d '=\";,:' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
 		port=$(grep "port" "${servercfgfullpath}" | tr -cd '[:digit:]')
 		queryport=${port:-"0"}
@@ -1791,10 +1793,10 @@ fn_info_game_terraria(){
 		maxplayers=$(grep "maxplayers" "${servercfgfullpath}" | grep -v "//" | tr -cd '[:digit:]')
 
 		# Not set
-		servername=${servername:-"NOT SET"}
+		servername=${servername:-"${worldname:-"NOT SET"}"}
 		port=${port:-"0"}
 		queryport=${queryport:-"0"}
-		gameworld=${gameworld:-"NOT SET"}
+		gameworld=${gameworld:-"${worldname:-"NOT SET"}"}
 		maxplayers=${maxplayers:-"0"}
 	fi
 }
@@ -2211,7 +2213,7 @@ fn_info_game_wmc(){
 
 		# Not set
 		servername=${servername:-"NOT SET"}
-		queryport=${rconpassword:-"NOT SET"}
+		queryport=${queryport:-"NOT SET"}
 		maxplayers=${maxplayers:-"0"}
 		configip=${configip:-"0.0.0.0"}
 	fi
