@@ -111,7 +111,7 @@ fn_info_game_av() {
 		servername=$(grep "name=" "${servercfgfullpath}" | sed 's/name=//')
 		serverpassword=$(grep "password=" "${servercfgfullpath}" | sed 's/password=//')
 		port=$(grep "port=" "${servercfgfullpath}" | sed 's/port=//')
-		queryport=$((port+3))
+		queryport=$((port))
 		steamqueryport=$((port+20))
 		steammasterport=$((port+21))
 		rconport=$(grep "rconPort=" "${servercfgfullpath}" | sed 's/rconPort=//')
@@ -125,7 +125,7 @@ fn_info_game_av() {
 		maxplayers=${maxplayers:-"NOT SET"}
 		servername=${servername:-"NOT SET"}
 		serverpassword=${serverpassword:-"NOT SET"}
-		port=${zero}
+		port=${port:-"0"}
 		queryport=${queryport:-"0"}
 		steamqueryport=${steamqueryport:-"0"}
 		steammasterport=${steammasterport:-"0"}
