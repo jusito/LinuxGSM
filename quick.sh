@@ -14,8 +14,9 @@ servercode="$1"
     touch .dev-debug
     ./linuxgsm.sh "$servercode"
     ./"$servercode" auto-install | (
-        sed -i 's/steamuser="username"/steamuser="username"/' "lgsm/config-lgsm/$servercode/common.cfg"
-        sed -i "s/steampass='password'/steampass='password'/" "lgsm/config-lgsm/$servercode/common.cfg"
+        mkdir -p "lgsm/config-lgsm/$servercode/"
+        echo 'steamuser="username"' > "lgsm/config-lgsm/$servercode/common.cfg"
+        echo "steampass='password'" >> "lgsm/config-lgsm/$servercode/common.cfg"
         ./"$servercode" auto-install
     )
     ./"$servercode" start
