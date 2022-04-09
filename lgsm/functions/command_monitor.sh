@@ -61,7 +61,7 @@ fn_monitor_check_update(){
 	fi
 }
 
-fn_monitor__is_server_running(){
+fn_monitor_is_server_running(){
 	fn_print_dots "Checking session"
 
 	# uses status var from check_status.sh
@@ -117,13 +117,10 @@ fn_monitor_query(){
 			querystatus="100"
 			if [ "${querymethod}" ==  "gamedig" ]; then
 				query_gamedig.sh
-
 			elif [ "${querymethod}" ==  "gsquery" ]; then
 				fn_query_gsquery
-
 			elif [ "${querymethod}" ==  "tcp" ]; then
 				fn_query_tcp
-
 			else
 				fn_print_fail_nl "${log_msg} reason: unhandled query method \"${querymethod}\""
 			fi
@@ -250,7 +247,7 @@ fn_monitor_check_update
 check_only_if_running="$([ "${querymode}" == "1" ] && echo true || echo false )"
 
 exitcode="1" # if not altered below, coding error => FATAL
-if ! fn_monitor__is_server_running; then
+if ! fn_monitor_is_server_running; then
 	fn__restart_server "restart"
 	exitcode="3"
 
