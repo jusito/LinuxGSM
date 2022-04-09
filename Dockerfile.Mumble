@@ -1,0 +1,11 @@
+FROM ubuntu:22.04
+
+WORKDIR /tmp
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y cmake clang-13 g++ git curl zip pkg-config \
+        libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxext-dev mesa-common-dev libxrandr-dev libxxf86vm-dev libbluetooth-dev libx11-xcb-dev bison gperf python3 python3-distutils autoconf libxcb-xinerama0-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-dev libx11-xcb-dev libx11-xcb-dev \
+        '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev python2 libdbus-1-dev && \
+    git clone --branch "v1.4.230" --depth 1 https://github.com/mumble-voip/mumble.git && cd mumble && ./scripts/vcpkg/get_mumble_dependencies.sh && \
+    mkdir build && cd build && \
+    cmake "-DVCPKG_TARGET_TRIPLET=x64-linux" "-Dstatic=ON" "-DCMAKE_TOOLCHAIN_FILE=/root/vcpkg/scripts/buildsystems/vcpkg.cmake" "-DIce_HOME=/root/vcpkg/installed/x64-linux" "-DCMAKE_BUILD_TYPE=Release" \
+        -Dserver=ON -Dclient=OFF ..
+
