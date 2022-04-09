@@ -69,14 +69,14 @@ nmrih,libtinfo5:i386
 ns
 ns2,speex,libtbb2
 ns2c,speex:i386,libtbb2
-onset,libmariadbclient-dev
+onset,libmariadb-dev-compat,libmariadb-dev
 opfor
 pc
 pmc,openjdk-17-jre
 pstbs,libgconf-2-4
 pvkii
 pvr,libc++1
-pz,openjdk-16-jre,rng-tools
+pz,openjdk-17-jre,rng-tools
 q2
 q3
 ql
@@ -99,8 +99,8 @@ sol
 squad
 st
 stn
-sven,libssl1.1:i386,zlib1g:i386
-terraria,libsdl
+sven,libssl3:i386,zlib1g:i386
+terraria
 tf2,libcurl4-gnutls-dev:i386
 tfc
 ti
