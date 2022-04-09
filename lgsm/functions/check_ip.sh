@@ -26,8 +26,7 @@ for ethtool_command in "${ethtool_commands_array[@]}"; do
 	fi
 done
 
-getip=$(${ipcommand} -o -4 addr | awk '{print $4}' | grep -oe '\([0-9]\{1,3\}\.\?\)\{4\}' | sort -u | grep -v 127.0.0)
-getipwc=$(${ipcommand} -o -4 addr | awk '{print $4}' | grep -oe '\([0-9]\{1,3\}\.\?\)\{4\}' | sort -u | grep -vc 127.0.0)
+mapfile -t current_ips < <(${ipcommand} -o -4 addr | awk '{print $4}' | grep -oe '\([0-9]\{1,3\}\.\?\)\{4\}' | sort -u | grep -v 127.0.0)
 
 function fn_is_valid_ip() {
 	local ip="${1}"
@@ -50,14 +49,14 @@ elif fn_is_valid_ip "${configip}";then
 	telnetip=( "${configip}" )
 # If there is only 1 server IP address.
 # Some IP details can automaticly use the one IP
-elif [ "${getipwc}" == "1" ]; then
-	queryips=( "127.0.0.1" $(echo "${getip}") )
+elif [ "${#current_ips[@]}" == "1" ]; then
+	queryips=( "127.0.0.1" "${current_ips[@]}" )
 	ip="0.0.0.0"
-	webadminip=( "${getip}" )
-	telnetip=( "${getip}" )
+	webadminip=( "${current_ips[@]}" )
+	telnetip=( "${current_ips[@]}" )
 # If no ip is set by the user and server has more than one IP.
 else
-	queryips=( "127.0.0.1" $(echo "${getip}") )
+	queryips=( "127.0.0.1" "${current_ips[@]}" )
 	ip="0.0.0.0"
 	webadminip=( "${ip}" )
 	telnetip=( "${ip}" )
