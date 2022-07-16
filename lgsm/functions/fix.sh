@@ -52,7 +52,7 @@ fn_apply_fix() {
 	fi
 }
 
-local apply_pre_start_fix=(ark arma3 bo cmw csgo dst hw ins nmrih onset rust rw sdtd sfc sof2 squad st tf2 terraria ts3 mcb mta unt vh wurm zmr)
+local apply_pre_start_fix=(ark armar arma3 bo cmw csgo dst hw ins nmrih onset rust rw sdtd sfc sof2 squad st tf2 terraria ts3 mcb mta unt vh wurm zmr)
 local apply_post_install_fix=(av cmw kf kf2 lo onset ro samp ut2k4 ut ut3)
 
 # validate registered fixes for safe development

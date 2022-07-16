@@ -21,7 +21,7 @@ if [ -f ".dev-debug" ]; then
 	echo "invocation linuxgsm.sh $@ $(date "+%Y-%m-%d-%H:%M:%S:%N")"
 fi
 
-version="v21.5.1"
+version="v22.1.0"
 shortname="core"
 gameservername="core"
 commandname="CORE"
@@ -51,6 +51,12 @@ userinput2="${2}"
 githubuser="${LGSM_GITHUBUSER:-"GameServerManagers"}"
 githubrepo="${LGSM_GITHUBREPO:-"LinuxGSM"}"
 githubbranch="${LGSM_GITHUBBRANCH:-"master"}"
+
+# Check that curl is installed before doing anything
+if [ ! "$(command -v curl 2>/dev/null)" ]; then
+	echo -e "[ FAIL ] Curl is not installed"
+	exit 1
+fi
 
 # Core function that is required first.
 core_functions.sh(){
