@@ -10,14 +10,6 @@ functionselfname="$(basename "$(readlink -f "${BASH_SOURCE[0]}")")"
 # First run requires start with no parms.
 # After first run new dirs are created.
 if [ ! -d "${serverfiles}/Creative" ]; then
-	parmsbypass=1
-	fixbypass=1
-	exitbypass=1
-	command_start.sh
-	fn_firstcommand_reset
-	sleep 10
-	exitbypass=1
-	command_stop.sh
-	fn_firstcommand_reset
-	unset parmsbypass
+	# maps need to be copied
+	cp -rf "${serverfiles}/dist"/* "${serverfiles}/"
 fi
