@@ -822,7 +822,7 @@ fn_info_message_av(){
 	{
 		fn_port "header"
 		fn_port "Game" port udp
-		fn_port "Query" queryport udp
+		fn_port "Query" queryport tcp
 		fn_port "Steam Master" steammasterport udp
 		fn_port "Steam Query" steamqueryport udp
 		fn_port "RCON" rconport tcp
